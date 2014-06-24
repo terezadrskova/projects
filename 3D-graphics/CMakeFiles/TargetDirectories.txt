@@ -1,0 +1,6 @@
+/homes/td613/Documents/graphics/cwk_5/cgcoursework/CMakeFiles/cgExercise01.dir
+/homes/td613/Documents/graphics/cwk_5/cgcoursework/CMakeFiles/cgExercise02.dir
+/homes/td613/Documents/graphics/cwk_5/cgcoursework/CMakeFiles/cgExercise03.dir
+/homes/td613/Documents/graphics/cwk_5/cgcoursework/CMakeFiles/cgExercise04a.dir
+/homes/td613/Documents/graphics/cwk_5/cgcoursework/CMakeFiles/cgExercise04b.dir
+/homes/td613/Documents/graphics/cwk_5/cgcoursework/CMakeFiles/cgExercise05.dir

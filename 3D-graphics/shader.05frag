@@ -1,0 +1,344 @@
+#version 150 compatibility
+
+in vec3 origin, dir, point; 
+out vec4 outcolour;
+
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewMatrix;
+
+#define USE_OWN_GEOMETRY 0
+
+const int raytraceDepth = 42;
+const int numSpheres = 6;
+
+struct Ray
+{
+  vec3 origin;
+  vec3 dir;
+};
+struct Sphere
+{
+  vec3 centre;
+  float radius;
+  vec3 colour;
+};
+struct Plane
+{
+  vec3 point;
+  vec3 normal;
+  vec3 colour;
+};
+
+struct Intersection
+{
+  // this should be the distance between the origin and intersect
+  float t;
+  // hit point
+  vec3 point; 
+  // normal to the intersection
+  vec3 normal; 
+  // can be used as boolean of there exists an intersection
+  int hit;
+  vec3 colour;
+};
+
+void shpere_intersect(Sphere sph,  Ray ray, inout Intersection intersect)
+{
+  //////////////////////////////////////
+  //TODO Exercise 5
+  //calculate the intersection ray-sphere here
+
+  // setting the boolean of intersection back to zero
+  intersect.hit = 0;
+
+  float a = dot(ray.dir, ray.dir); 
+  float b = 2.0 * dot(ray.origin - sph.centre, ray.dir);
+  float c = dot(ray.origin - sph.centre, ray.origin - sph.centre) - sph.radius*sph.radius;
+    
+  float sqrtOf = b * b - (4.0 * a * c);
+  if (sqrtOf > 0.0){
+    
+    float d1 = (-b + sqrt(sqrtOf) ) / ( 2.0 * a );
+    float d2 = (-b - sqrt(sqrtOf) ) / ( 2.0 * a );
+
+    if(min(d1, d2) > 0){
+      // distance between the point of origin and intersection
+      intersect.point = ray.origin + min(d1, d2) * ray.dir;
+      // normal to the intersection is calculated by normalising 
+      // vector between point of intersection and the centre of sphere
+      intersect.normal = normalize(intersect.point - sph.centre);
+      // setting intersection boolean to 1 (true)
+      intersect.hit = 1;
+      intersect.colour = sph.colour;
+      intersect.t = distance(ray.origin, intersect.point);
+
+    }
+  }
+  //////////////////////////////////////
+}
+
+void plane_intersect(Plane pl, Ray ray, inout Intersection intersect)
+{
+  //////////////////////////////////////
+  //TODO Exercise 5
+  //calculate the intersection ray-plane here
+  //generate a checkerboard pattern
+
+  // change the boolean of intersection back to zero (false)
+  intersect.hit = 0;
+
+
+  float num = dot( (pl.point - ray.origin), pl.normal );
+  float denom = dot( ray.dir, pl.normal);
+
+  if( denom != 0 && num != 0){
+    // if there is no intersection
+    float d = (num / denom);
+
+    if(d > 0){
+
+      intersect.point = ray.origin + d  * ray.dir;
+      intersect.normal = pl.normal;
+      // setting intersection boolean to 1 (true)
+      intersect.hit = 1;
+      intersect.colour = pl.colour;
+      intersect.t  = distance(ray.origin, intersect.point);
+
+      
+      // ==== MIGHT HAVE TO BE CHANGED ! ===
+      vec3  planeX = vec3(1.0, 0.0, 0.0);
+      float distancePx = dot(intersect.point - pl.point, planeX);
+      vec3  planeY = cross(pl.normal, planeX);
+      float distancePy = dot(intersect.point - pl.point, planeY);
+
+      bool everyOtherX = mod(floor(distancePx), 2) == 0;
+      bool everyOtherY = mod(floor(distancePy), 2) == 0;
+
+      if ( !everyOtherX && everyOtherY || !everyOtherY && everyOtherX)
+	intersect.colour = vec3(0.5, 0.5, 0.5);
+    }
+  }
+}
+
+Sphere sphere[numSpheres];
+Plane plane;
+void Intersect(Ray r, inout Intersection i)
+{
+  //////////////////////////////////////
+  //TODO Exercise 5
+  //test the ray for intersections with all objects
+
+  plane_intersect(plane, r, i);
+  
+  Intersection nearest = i;
+
+  for(int x = 0; x < numSpheres; x++){
+    
+    shpere_intersect(sphere[x], r, i);	
+    if(i.hit == 1){
+
+      // calculating the nearest intersection
+      if(nearest.hit == 1 && i.t < nearest.t){
+	nearest = i;
+      }
+	    
+      if(nearest.hit == 0){
+	nearest = i;
+      }
+    }
+  }
+ 
+  i = nearest;
+}
+
+int seed = 0;
+float rnd()
+{
+  //////////////////////////////////////
+  // you may use pseudo random number 
+  // generator this to account for numerical errors
+  // however, you don't need to
+  seed = int(mod(float(seed)*1364.0+626.0, 509.0));
+  return float(seed)/509.0;
+}
+
+vec3 computeShadow(in Intersection intersect)
+{
+  //////////////////////////////////////
+  //TODO Exercise 5
+  //compute the shadow of the objects 
+  //using additional rays
+	
+
+  float randomNumber = rnd();
+  float rndCoeff = 15;
+  float rndX = randomNumber / rndCoeff; 
+  float rndY = randomNumber / rndCoeff; 
+  float rndZ = randomNumber / rndCoeff;
+
+  // add value to limit distortion
+  vec3 lightSource = vec3(6 + rndX, 4 + rndY, 3 + rndZ);
+
+  Ray rayOfShadows;
+  float epsilon = 0.0001;
+
+  rayOfShadows.dir = lightSource - intersect.point;
+  rayOfShadows.origin = intersect.point + (epsilon * rayOfShadows.dir);
+
+  Intersection shadowIntersection;
+  // set the boolean to zero (false) to start with
+  shadowIntersection.hit = 0;
+
+  Intersect(rayOfShadows, shadowIntersection);
+ 
+  if (shadowIntersection.hit == 0){
+    return vec3(1,1, 1);
+  }
+  else{
+    return vec3(0, 0, 0);
+  } 
+  
+  //////////////////////////////////////
+	
+}
+
+void main()
+{
+  // please leave the scene definition unaltered for marking reasons
+  // if you add your own geometry or scene, please use USE_OWN_GEOMETRY 1
+  // and implement it wihtin preprocessor blocks 
+  // #if USE_OWN_GEOMETRY
+  // your scene
+  // #endif //USE_OWN_GEOMETRY
+  //scene definition:
+  sphere[0].centre   = vec3(-2.0, 1.5, -3.5);
+  sphere[0].radius   = 1.5;
+  sphere[0].colour = vec3(0.8,0.8,0.8);
+  sphere[1].centre   = vec3(-0.5, 0.0, -2.0);
+  sphere[1].radius   = 0.6;
+  sphere[1].colour = vec3(0.3,0.8,0.3);
+  sphere[2].centre   = vec3(1.0, 0.7, -2.2);
+  sphere[2].radius   = 0.8;
+  sphere[2].colour = vec3(0.3,0.8,0.8);
+  sphere[3].centre   = vec3(0.7, -0.3, -1.2);
+  sphere[3].radius   = 0.2;
+  sphere[3].colour = vec3(0.8,0.8,0.3);
+  sphere[4].centre   = vec3(-0.7, -0.3, -1.2);
+  sphere[4].radius   = 0.2;
+  sphere[4].colour = vec3(0.8,0.3,0.3);
+  sphere[5].centre   = vec3(0.2, -0.2, -1.2);
+  sphere[5].radius   = 0.3;
+  sphere[5].colour = vec3(0.8,0.3,0.8);
+  plane.point = vec3(0,-0.5, 0);
+  plane.normal = vec3(0, 1.0, 0);
+  plane.colour = vec3(1, 1, 1);
+  seed = int(mod(dir.x * dir.y * 39786038.0, 65536.0));
+  //scene definition end
+
+  //outcolour = vec4(1,1,1,1);
+
+  //////////////////////////////////////
+  //TODO Exercise 5
+  //implement your ray tracing algorithm here
+  //don't forget to finally integrate mouse-interaction
+
+  // ============= initilise values =============
+
+  vec4 origRay = vec4(1,1,1,1); 
+  vec4 dirRay = vec4(1,1,1,1); 
+
+  origRay.xyz = origin;
+  dirRay.xyz = dir;
+
+  origRay = origRay * modelViewMatrix;
+  dirRay = modelViewMatrix * dirRay;
+
+  Intersection intersection;
+  Ray originalRay;
+  originalRay.origin = origRay.xyz + vec3(0, 0, 2.0); 
+  originalRay.dir    = dirRay.xyz + vec3(0, 0, 2.0); 
+  Intersect(originalRay, intersection);
+
+
+  //  =============== Phong shading ==============
+  // suggested values from prof. Kainz email
+  vec3 lightSource = vec3(6, 4, 3); 
+  // normal vector of vertex
+  vec3 n = normalize(intersection.normal);
+  // direction to light source
+  vec3 l = normalize(lightSource - intersection.point);
+  // normalized direction to camera
+  vec3 e = normalize(-intersection.point);
+  //reflected light vector
+  vec3 r = normalize(reflect(-l, n));
+
+  float mu = 0.3;
+  float specularExponent = 100;
+
+  float d = distance(lightSource, intersection.point);
+
+  float attenuation = 1.0 /
+    (gl_LightSource[0].constantAttenuation 
+     + gl_LightSource[0].linearAttenuation * d 
+     + gl_LightSource[0].quadraticAttenuation * d * d);
+
+  vec3 shadow = computeShadow(intersection);
+
+  //ambient color component
+  vec4 ia = vec4(1,1,1,1); 
+  ia.xyz = 0.1 * intersection.colour;
+  // diffuse color component
+  vec4 id = vec4(1,1,1,1); 
+  id.xyz = 0.5 * shadow * attenuation *  intersection.colour * dot(n,l);
+  // speculor color component
+  vec4 is = vec4(1,1,1,1); 
+  is.xyz = shadow * attenuation * intersection.colour * 
+    pow(max(dot(r,e), 0), (mu * specularExponent));
+
+  // ??? delete specular term - shiny?
+
+  // the final vertex colour
+  vec4 outcol = ia + id + is;
+
+
+
+  // =============== Reflections ===========
+  // depends on reflected intensity divided by distance
+  // from the origin (light source)
+  vec3 colourSum = (shadow * intersection.colour) / intersection.t;
+  int reflectionsCounter = 0;
+  Ray reflectedRay;
+  float epsilon = 0.0001;
+
+  for (int i = 0; i < raytraceDepth; i++){   
+
+    // check if it's blocked by an object
+
+    reflectedRay.origin = intersection.point + (intersection.normal * epsilon);
+    reflectedRay.dir = reflect(originalRay.dir, intersection.normal);
+
+    Intersect(reflectedRay, intersection);
+	     
+    if (intersection.hit == 0) {
+      break;
+    }
+    //reflections by their distance from the plane
+    // !!! try to add colour instead of 
+    colourSum *= intersection.colour * min(1, (1.0/ intersection.t));
+    reflectionsCounter++;
+  }
+
+  // if there are no reflections
+
+   if (reflectionsCounter == 0){ 
+    colourSum = vec3(0,0,0);
+   }
+
+
+  // colour returning back from pipeline
+  outcolour.xyz = outcol.xyz + colourSum;
+	
+ 
+  //////////////////////////////////////
+
+}
