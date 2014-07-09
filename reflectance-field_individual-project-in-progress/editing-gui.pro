@@ -14,7 +14,6 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    glwidget.cpp \
     loadPPM.cpp \
     voronoi-diagram.cpp \
     loading-images.cpp \
@@ -23,10 +22,10 @@ SOURCES += main.cpp\
     intensities.cpp \
     math-functions.cpp \
     gamma.cpp \
-    relighting.cpp
+    relighting.cpp \
+    image-manipulation.cpp
 
 HEADERS  += mainwindow.h \
-    glwidget.h \
     loadPPM.h
 
 FORMS    += mainwindow.ui

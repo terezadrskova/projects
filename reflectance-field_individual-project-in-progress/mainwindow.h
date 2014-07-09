@@ -25,6 +25,9 @@ const int LONGTITUDE = 512;
 const int COLORCOMPONENTS = 3;
 const int NUMBEROFLIGHTSOURCES = 253;
 
+const QString voronoiPathname = "/homes/td613/Documents/individual project/images/voronoi-image.png";
+//const char * ppmLightMapPath = "/homes/td613/Documents/individual project/images/light-map.ppm";
+
 const double GAMMA = 2.2;
 
 namespace Ui {
@@ -68,6 +71,9 @@ public:
     Mat addGamma(Mat& img, double gamma);
     Mat removeGamma(Mat& img, double gamma);
 
+    // image manipulation
+
+
     ~MainWindow();
     
 private slots:
@@ -76,6 +82,10 @@ private slots:
     void on_Voronoi_Diagram_Button_clicked();
     void on_gammaButtton_clicked();
     void on_relightingButton_clicked();
+
+    void on_updateBtn_clicked();
+
+    void on_slider_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;
@@ -103,6 +113,8 @@ private:
 
     QStringList lightMapPath;
     QStringList rfImagesPath;
+
+    QString lightMapPathname;
 };
 
 #endif // MAINWINDOW_H

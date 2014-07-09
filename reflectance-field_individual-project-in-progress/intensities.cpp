@@ -65,7 +65,8 @@ void MainWindow::calculateFinalIntensities(Subdiv2D& subdiv){
          averageTheta[i] = 0;
     }
     //red-green-blue.pfm  grace_lat_long.pfm
-    const char* imageName = "/homes/td613/Documents/individual project/images/grace_lat_long.pfm";
+    const char* imageName = lightMapPathname.toStdString().c_str();
+    //const char* imageName = "/homes/td613/Documents/individual project/images/stpeters_probe_lat_long.pfm";
     unsigned int mapLatitude = 1024;
     unsigned int mapLongtitude = 512;
     unsigned int mapComponenets = 3;
@@ -109,9 +110,7 @@ void MainWindow::calculateFinalIntensities(Subdiv2D& subdiv){
         }
     }
 
-
-
-    float scalar, tempR, tempG, tempB;
+    float scalar;
 
     for(int i=0; i<NUMBEROFLIGHTSOURCES; i++){
 
@@ -121,39 +120,19 @@ void MainWindow::calculateFinalIntensities(Subdiv2D& subdiv){
             finalVoronoiIntensities[i][1] = voronoiIntensities[i][2]/voronoiIntensities[i][0];
             finalVoronoiIntensities[i][2] = voronoiIntensities[i][3]/voronoiIntensities[i][0];
         }
-         else
-        {
-            finalVoronoiIntensities[i][0] = 0;
-            finalVoronoiIntensities[i][1] = 0;
-            finalVoronoiIntensities[i][2] = 0;
-         }
 
           // final cell intensity is the contrast added to the RF images
-          finalCellIntensity[i] = (finalVoronoiIntensities[i][0]+finalVoronoiIntensities[i][1]+finalVoronoiIntensities[i][2])/3;
+         finalCellIntensity[i] = (finalVoronoiIntensities[i][0]+finalVoronoiIntensities[i][1]+finalVoronoiIntensities[i][2])/3;
 
-         //normalise values to get colour
-         scalar = (finalVoronoiIntensities[i][0] + finalVoronoiIntensities[i][1] + finalVoronoiIntensities[i][2])/3;
+           //normalise values to get colour between 0-1
+         scalar = (finalVoronoiIntensities[i][0] + finalVoronoiIntensities[i][1] + finalVoronoiIntensities[i][2])/13;
 
-        // change to range 0-255
-        tempR = finalVoronoiIntensities[i][0]/scalar;
-        tempG = finalVoronoiIntensities[i][1]/scalar;
-        tempB = finalVoronoiIntensities[i][2]/scalar;
+         finalVoronoiColors[i][0] = finalVoronoiIntensities[i][0]/scalar;
+         finalVoronoiColors[i][1] = finalVoronoiIntensities[i][1]/scalar;
+         finalVoronoiColors[i][2] = finalVoronoiIntensities[i][2]/scalar;
 
-        if(finalVoronoiColors[i][0]>1){
-            finalVoronoiColors[i][0] = 1;
-        }
-        finalVoronoiColors[i][0] = tempR;
-        if(finalVoronoiColors[i][1]>1){
-            finalVoronoiColors[i][1] = 1;
-        }
-        finalVoronoiColors[i][1] = tempG;
-        if(finalVoronoiColors[i][2]>1){
-            finalVoronoiColors[i][2] = 1;
-        }
-        finalVoronoiColors[i][2] = tempB;
-
-        //qDebug() << "final voronoi colours" << finalVoronoiColors[i][0] << finalVoronoiColors[i][1] << finalVoronoiColors[i][2];
-    }
+         //qDebug() << "final voronoi colours" << finalVoronoiColors[i][0] << finalVoronoiColors[i][1] << finalVoronoiColors[i][2];
+     }
 }
 
 

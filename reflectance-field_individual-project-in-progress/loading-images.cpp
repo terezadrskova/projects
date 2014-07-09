@@ -61,7 +61,7 @@ void MainWindow::loadRFImages()
         arrayOfRFImages[i] = image;
     }
 
-    qDebug() << "DONE" << endl;
+    qDebug() << "loading RF images - DONE" << endl;
 }
 
 /* ----------------------------------------------------------------
@@ -91,23 +91,13 @@ void MainWindow::loadLightMap()
 
     // only one file can be uploaded at the time (using ExistingFile instead of ExistingFiles above)
     // changing pathname to constant char*
-    const char* imageName = lightMapPath.at(0).toLocal8Bit().constData();
+    lightMapPathname = lightMapPath.at(0);
+    const char * imageName = lightMapPath.at(0).toLocal8Bit().constData();
 
     unsigned int mapLatitude = 1024;
     unsigned int mapLongtitude = 512;
     unsigned int mapComponenets = 3;
     lightProbePFM = loadPFM(imageName, mapLatitude, mapLongtitude, mapComponenets);
 
-    //qDebug() << "Print out: " << lightProbePFM[512];
-    //qDebug() << lightProbePFM[(52*LightProbe+36)*3];
-
-    //lightMap = imread(imageName, 1 );
-    //cvtColor(lightMap, resultLightMap, CV_BGR2GRAY );
-
-    //namedWindow("Light Probe", CV_WINDOW_AUTOSIZE);
-    //imshow("Light Probe", resultLightMap);
-
-    //imwrite( "/homes/td613/Documents/individual project/images/Result_Image.png", resultLightMap);
-
-    qDebug() << "DONE" << endl;
+    qDebug() << "loading lightmap - DONE" << endl;
 }

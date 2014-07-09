@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QString>
 #include <QtCore/qmath.h>
+#include <QSlider>
 
 #include <iostream>
 #include <cmath>
@@ -26,8 +27,20 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QPixmap pix("/homes/td613/Documents/individual project/images/Gray_Image.jpg");
-    ui->label_pix->setPixmap(pix);
+    QLabel *label_pix = new QLabel;
+    QPixmap lightmap(lightMapPathname);
+    ui->label_pix->setPixmap(lightmap);
+    ui->label_pix->setScaledContents(true);
+
+    QLabel *label_pix_2 = new QLabel;
+    QPixmap rfImage("/homes/td613/Documents/individual project/images/grace-cathedral/FINAL-RELIGHTED-image.png");
+    ui->label_pix_2->setPixmap(rfImage);
+    ui->label_pix_2->setScaledContents(true);
+
+    QSlider *slider = new QSlider(Qt::Horizontal);
+    slider->setValue(1);
+    slider->setRange(0,1);
+
 }
 
 MainWindow::~MainWindow()
@@ -66,4 +79,25 @@ void MainWindow::on_relightingButton_clicked()
     imwrite( "/homes/td613/Documents/individual project/images/relightedImage.png", relightedImg);
 
     qDebug() << "Done";
+}
+
+
+void MainWindow::on_updateBtn_clicked()
+{
+    qDebug() << "button clicked";
+}
+
+
+void MainWindow::on_slider_valueChanged(int value)
+{
+    if(value==0){
+        const char* pfmLightMapPath = lightMapPathname.toStdString().c_str();
+        LoadPFMAndSavePPM(pfmLightMapPath, "/homes/td613/Documents/individual project/images/light-map.ppm");
+        QPixmap newlightmap("/homes/td613/Documents/individual project/images/light-map.ppm");
+        ui->label_pix->setPixmap(newlightmap);
+    }
+    else {
+        QPixmap voronoiImage(voronoiPathname);
+        ui->label_pix->setPixmap(voronoiImage);
+    }
 }

@@ -73,10 +73,9 @@ Mat MainWindow::relighting(){
             finalLightStageIntensities[i] = 0.75;
         }
 
-        QString pathname = QString("/homes/td613/Documents/individual project/images/rf/relighted-image%1.png").arg(i);
-        //const char * path = pathname;
-        const char* path = pathname.toStdString().c_str();
-        imwrite(path, tempImg);
+        //QString pathname = QString("/homes/td613/Documents/individual project/images/grace-cathedral/relighted-image%1.png").arg(i);
+        //const char* path = pathname.toStdString().c_str();
+        //imwrite(path, tempImg);
 
     }
 
@@ -90,9 +89,17 @@ Mat MainWindow::relighting(){
     // add gamma to the image
     relightedImg = addGamma(relightedImg, GAMMA);
 
+    // convert to format which can be displayed by using OpenCV imwrite
     relightedImg.convertTo(relightedImg,CV_8UC1);
 
-    imwrite( "/homes/td613/Documents/individual project/images/rf/FINAL-RELIGHTED-image.png", relightedImg);
+    // decrease contrast (scalar made image too bright - but in correct range)
+    relightedImg.convertTo(relightedImg, -1, 0.6, 0);
+
+    imwrite( "/homes/td613/Documents/individual project/images/grace-cathedral/FINAL-RELIGHTED-image.png", relightedImg);
     qDebug() << "DONE WITH RELIGHTING";
+
+    QPixmap newLightmap("/homes/td613/Documents/individual project/images/grace-cathedral/FINAL-RELIGHTED-image.png");
+    ui->label_pix_2->setPixmap(newLightmap);
+
     return relightedImg;
 }

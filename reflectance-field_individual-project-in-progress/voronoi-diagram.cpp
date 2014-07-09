@@ -110,7 +110,7 @@ void MainWindow::createVoronoiDiagram()
 
    img = Scalar::all(0);
    string win = "Voronoi Diagram - Grace Cathedral";
-   imshow(win, img);
+   //imshow(win, img);
 
    for( int i = 0; i < NUMBEROFLIGHTSOURCES; i++ )
    {
@@ -122,7 +122,7 @@ void MainWindow::createVoronoiDiagram()
        //qDebug() << i << "theta: " << theta << " phi: " << phi;
        locatePoint(img, subdiv, fp, active_facet_color);
 
-       imshow(win, img);
+       //imshow(win, img);
 
        //if( waitKey( 100 ) >= 0 )
        //    break;
@@ -131,7 +131,8 @@ void MainWindow::createVoronoiDiagram()
 
        img = Scalar::all(0);
        drawSubdiv(img, subdiv, delaunay_color);
-       imshow( win, img );
+       //imshow( win, img );
+
 
        //if( waitKey( 100 ) >= 0 )
        //    break;
@@ -142,7 +143,12 @@ void MainWindow::createVoronoiDiagram()
 
    img = Scalar::all(0);
    paintVoronoi(img, subdiv);
-   imshow(win, img);
+   //imshow(win, img);
+
+   const char* path = voronoiPathname.toStdString().c_str();
+   //const char* path = "/homes/td613/Documents/individual project/images/voronoi-image.png";
+   imwrite(path, img);
+
 
 }
 

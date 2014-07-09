@@ -3,6 +3,7 @@
 #include <QImage>
 #include <QPixmap>
 
+/*
 GLWidget::GLWidget(QWidget *parent) :
     QGLWidget(parent)
 {
@@ -17,6 +18,7 @@ void GLWidget::initializeGL(){
     glEnable(GL_LIGHTING);
 }
 
+
 void GLWidget::paintGL(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -26,6 +28,8 @@ void GLWidget::paintGL(){
     glutSolidTeapot(0.6);
 
 }
+
+
 void GLWidget::resizeGL(int w, int h){
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
@@ -35,3 +39,4 @@ void GLWidget::resizeGL(int w, int h){
     glLoadIdentity();
     gluLookAt(0,0,5, 0,0,0, 0,1,0);
 }
+*/
