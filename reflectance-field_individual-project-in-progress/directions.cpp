@@ -58,6 +58,7 @@ void MainWindow::calculateDirections()
             diff = 512-phi;
             phi = phi+2*diff;
         }
+
         sphericalCoordinatesPX[i][0] = phi;
 
 

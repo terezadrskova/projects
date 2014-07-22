@@ -15,7 +15,7 @@
 using namespace cv;
 using namespace std;
 
-Mat MainWindow::relighting(){
+void MainWindow::relighting(){
 
     int size = arrayOfRFImages.size();
     Mat tempImg, relightedImg;
@@ -43,6 +43,18 @@ Mat MainWindow::relighting(){
         channel[2] *= finalVoronoiColors[i][0]*finalVoronoiIntensities[i][0]*lightIntensities[i][0];
         channel[1] *= finalVoronoiColors[i][1]*finalVoronoiIntensities[i][1]*lightIntensities[i][1];
         channel[0] *= finalVoronoiColors[i][2]*finalVoronoiIntensities[i][2]*lightIntensities[i][2];
+
+        // re relighting
+        for(int x=0; x<light.size(); x++){
+            if(light[x]->cellToRelit==i){
+                qDebug() << "changing lighting of cell: " << i << "R: " << light[x]->redC
+                         << "G: " << light[x]->greenC
+                         << "B: " << light[x]->blueC;
+                channel[2] *= (light[x]->redC/255)*light[x]->lightIntensity;
+                channel[1] *= (light[x]->greenC/255)*light[x]->lightIntensity;
+                channel[0] *= (light[x]->blueC/255)*light[x]->lightIntensity;
+            }
+        }
 
         //Merging red and green channels
         merge(channel,3,tempImg);
@@ -73,9 +85,9 @@ Mat MainWindow::relighting(){
             finalLightStageIntensities[i] = 0.75;
         }
 
-        //QString pathname = QString("/homes/td613/Documents/individual project/images/grace-cathedral/relighted-image%1.png").arg(i);
-        //const char* path = pathname.toStdString().c_str();
-        //imwrite(path, tempImg);
+        QString pathname = QString("/homes/td613/Documents/individual project/images/coloured/relighted-image%1.png").arg(i);
+        const char* path = pathname.toStdString().c_str();
+        imwrite(path, tempImg);
 
     }
 
@@ -93,13 +105,30 @@ Mat MainWindow::relighting(){
     relightedImg.convertTo(relightedImg,CV_8UC1);
 
     // decrease contrast (scalar made image too bright - but in correct range)
-    relightedImg.convertTo(relightedImg, -1, 0.6, 0);
+    relightedImg.convertTo(relightedImg, -1, 0.7, 0);
 
     imwrite( "/homes/td613/Documents/individual project/images/grace-cathedral/FINAL-RELIGHTED-image.png", relightedImg);
     qDebug() << "DONE WITH RELIGHTING";
 
-    QPixmap newLightmap("/homes/td613/Documents/individual project/images/grace-cathedral/FINAL-RELIGHTED-image.png");
-    ui->label_pix_2->setPixmap(newLightmap);
+    // update RF image
+    QPixmap rfImage("/homes/td613/Documents/individual project/images/grace-cathedral/FINAL-RELIGHTED-image.png");
+    ui->label_pix_2->setPixmap(rfImage);
 
-    return relightedImg;
+    // update lightmap
+    if(lightMapPathname!=""){
+        const char* pfmLightMapPath = lightMapPathname.toStdString().c_str();
+        LoadPFMAndSavePPM(pfmLightMapPath, "/homes/td613/Documents/individual project/images/light-map.ppm");
+        Mat lightMapTmp = imread("/homes/td613/Documents/individual project/images/light-map.ppm");
+        // make image lighter - add Gamma 2.2
+        lightMapTmp = addGamma(lightMapTmp, GAMMA);
+        imwrite( "/homes/td613/Documents/individual project/images/light-map.ppm", lightMapTmp);
+        QPixmap newLightmap("/homes/td613/Documents/individual project/images/light-map.ppm");
+        ui->label_lightmap->setPixmap(newLightmap);
+        ui->label_lightmap->setScaledContents(true);
+    }
+
+    // update voronoi
+    QPixmap newVoronoiImage(voronoiPathname);
+    ui->label_voronoi->setPixmap(newVoronoiImage);
+    ui->label_voronoi->setScaledContents(true);
 }

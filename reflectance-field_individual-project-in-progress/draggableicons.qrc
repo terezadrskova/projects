@@ -1,0 +1,7 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource prefix="">
+    <file>images/light.png</file>
+    <file>images/light-map.ppm</file>
+    <file>images/grace.ppm</file>
+ </qresource>
+ </RCC>

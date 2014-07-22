@@ -11,6 +11,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = test
 TEMPLATE = app
 
+RESOURCES   = draggableicons.qrc
+
+ # install image resources
+ target.path = $$[QT_INSTALL_EXAMPLES]/editing-gui
+ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
+ sources.path = $$[QT_INSTALL_EXAMPLES]/editing-gui
+ INSTALLS += target sources
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -23,10 +30,13 @@ SOURCES += main.cpp\
     math-functions.cpp \
     gamma.cpp \
     relighting.cpp \
-    image-manipulation.cpp
+    image-manipulation.cpp \
+    lightsource.cpp \
+    lights.cpp
 
 HEADERS  += mainwindow.h \
-    loadPPM.h
+    loadPPM.h \
+    lightsource.h
 
 FORMS    += mainwindow.ui
 

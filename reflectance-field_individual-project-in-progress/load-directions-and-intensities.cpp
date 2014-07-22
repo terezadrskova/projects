@@ -37,17 +37,16 @@ void MainWindow::extractFile(const QString &pathName, bool isDirection)
         return;
      }
 
+
     // extract file
     QTextStream in(&inputFile);
     int i = 0;
     while (!in.atEnd())
     {
         QString line = in.readLine();
-
         //splitting string into list of strings to seperate each light direction
         QRegExp rx("(\\ )"); //RegEx for ' '
         QStringList directionsList = line.split(rx);
-
         // extracking each token an inserting it into 2D array
         if (isDirection)
         {
@@ -60,6 +59,7 @@ void MainWindow::extractFile(const QString &pathName, bool isDirection)
             }
 
         }
+
 
         // change light intensities
         else

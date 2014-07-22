@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "lightsource.h"
+
 #include <QMainWindow>
 #include <QVector>
 #include <QtCore>
@@ -8,14 +10,18 @@
 #include <QGraphicsScene>
 #include <QString>
 #include <QList>
+#include <QColor>
 
 #include <cv.h>
 #include <highgui.h>
+#include <iostream>
 
+#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;
 
-// CONTANSTS
+// CONTANTS
 const QString LIGHTDIRECTIONSPATH = "/homes/td613/Documents/individual project/individual-project/editing-gui/config/light_directions.txt";
 const QString LIGHTINTENSITIESPATH = "/homes/td613/Documents/individual project/individual-project/editing-gui/config/light_intensities.txt";
 const double PI = 3.14159265359;
@@ -29,6 +35,8 @@ const QString voronoiPathname = "/homes/td613/Documents/individual project/image
 //const char * ppmLightMapPath = "/homes/td613/Documents/individual project/images/light-map.ppm";
 
 const double GAMMA = 2.2;
+
+//class LightSource;
 
 namespace Ui {
 class MainWindow;
@@ -65,36 +73,58 @@ public:
     void createVoronoiDiagram();
 
     // relighting
-    Mat relighting();
+    void relighting();
 
     // gamma
     Mat addGamma(Mat& img, double gamma);
     Mat removeGamma(Mat& img, double gamma);
 
-    // image manipulation
+    // lightsources and draggable
+    Subdiv2D getSubdiv();
+    int closestLightSource(Point2f whereClicked);
 
+    // color picker
+    void setColor();
+
+    // public attributes so can be access by LightSource class
+    Rect rect;
+    Subdiv2D subdiv;
+    QVector<LightSource*> light;
+    int activeLightSource;
 
     ~MainWindow();
     
 private slots:
     void on_actionLoad_Reflectance_Field_Images_triggered();
     void on_actionLoad_Light_Map_image_triggered();
-    void on_Voronoi_Diagram_Button_clicked();
-    void on_gammaButtton_clicked();
     void on_relightingButton_clicked();
-
     void on_updateBtn_clicked();
 
-    void on_slider_valueChanged(int value);
+    void on_sliderVoronoi_actionTriggered(int action);
+    void on_spinBoxVoronoi_valueChanged(int arg1);
+
+    void on_sliderLightmap_valueChanged(int value);
+    void on_spinBoxLightmap_valueChanged(int arg1);
+
+    void on_spbIntensity_editingFinished();
+
+    void on_colorPicker_clicked();
+
+    void on_pushButton_2_clicked();
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+    void dropEvent(QDropEvent *event);
+    void mousePressEvent(QMouseEvent *event);
 
 private:
     Ui::MainWindow *ui;
 
     float* lightProbePFM;
+    int x,y,;
 
-    Mat lightMap;
-    Mat resultImage;
-    Mat resultLightMap;
+    Mat lightMap,resultImage,resultLightMap;
     QVector<Mat> arrayOfRFImages;
 
     float lightDirections[NUMBEROFLIGHTSOURCES][COLORCOMPONENTS];
@@ -113,8 +143,21 @@ private:
 
     QStringList lightMapPath;
     QStringList rfImagesPath;
-
     QString lightMapPathname;
+
+    // lightsources
+    int numberOfLights;
+    Mat lightImg;
+
+   // color dialog
+    QColor color;
+    int red;
+    int green;
+    int blue;
 };
+
+
+
+
 
 #endif // MAINWINDOW_H

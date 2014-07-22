@@ -66,7 +66,6 @@ void MainWindow::calculateFinalIntensities(Subdiv2D& subdiv){
     }
     //red-green-blue.pfm  grace_lat_long.pfm
     const char* imageName = lightMapPathname.toStdString().c_str();
-    //const char* imageName = "/homes/td613/Documents/individual project/images/stpeters_probe_lat_long.pfm";
     unsigned int mapLatitude = 1024;
     unsigned int mapLongtitude = 512;
     unsigned int mapComponenets = 3;

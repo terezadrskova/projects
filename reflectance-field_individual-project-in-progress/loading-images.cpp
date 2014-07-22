@@ -35,16 +35,6 @@ void MainWindow::loadRFImages()
         rfImagesPath = dialog.selectedFiles();
     }
 
-    // if images has been selected - show their path
-    if(!rfImagesPath.isEmpty()){
-        QMessageBox::information(this, tr("Filename"), "Upload was successful");
-        //qDebug() << "Filenames: " << rfImagesPath << endl;
-    }
-    // if no images has been uploaded - show an error message
-    else {
-         QMessageBox::warning(this, tr("Filename"), "You havn't uploaded any files!");
-    }
-
     // define the size of vector to avoid out of range error
     arrayOfRFImages.resize(rfImagesPath.size());
 
@@ -59,6 +49,15 @@ void MainWindow::loadRFImages()
         Mat image = imread(imageName, CV_LOAD_IMAGE_COLOR);
 
         arrayOfRFImages[i] = image;
+    }
+
+    // show that upload was successful
+    if(!rfImagesPath.isEmpty()){
+        QMessageBox::information(this, tr("Success"), "Upload was successful!");
+    }
+    // if no images has been uploaded - show an error message
+    else {
+         QMessageBox::warning(this, tr("Warning"), "You have not uploaded any files!");
     }
 
     qDebug() << "loading RF images - DONE" << endl;

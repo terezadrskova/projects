@@ -387,7 +387,9 @@ void LoadPFMAndSavePPM(const char *image_in, const char *image_out)
             for ( uint k = 0 ; k < numComponents ; ++k ) // color channels - 3 for RGB images
             {
                 uint index = i*width*numComponents + j*numComponents + k; //index within the image
-
+                if(img_in[index]>1.0){
+                    img_in[index] = 1.0;
+                }
                 //typecast 0.0f -> 1.0f values to the 0 - 255 range
                 img_out[index] = static_cast<unsigned char>(img_in[index]*255.0f); //typecast all color channels of each pixel
 

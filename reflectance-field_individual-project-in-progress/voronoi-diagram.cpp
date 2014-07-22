@@ -94,7 +94,6 @@ void MainWindow::paintVoronoi(Mat& img, Subdiv2D& subdiv)
  *-----------------------------------------------------------------*/
 void MainWindow::createVoronoiDiagram()
 {
-
    extractFile(LIGHTDIRECTIONSPATH, true);
    extractFile(LIGHTINTENSITIESPATH, false);
 
@@ -102,54 +101,31 @@ void MainWindow::createVoronoiDiagram()
    calculateIntensities();
 
    Scalar active_facet_color(0, 0, 255), delaunay_color(255,255,255);
-   Rect rect(0, 0, 1024, 512);
 
-   Subdiv2D subdiv(rect);
-   //Mat img(rect.size(), CV_8UC3);
    Mat img = imread("/homes/td613/Documents/individual project/images/grace.ppm", 1);
 
    img = Scalar::all(0);
-   string win = "Voronoi Diagram - Grace Cathedral";
-   //imshow(win, img);
 
    for( int i = 0; i < NUMBEROFLIGHTSOURCES; i++ )
    {
        int phi = sphericalCoordinatesPX[i][0];
        int theta = sphericalCoordinatesPX[i][1];
 
-
        Point2f fp(phi,theta);
-       //qDebug() << i << "theta: " << theta << " phi: " << phi;
        locatePoint(img, subdiv, fp, active_facet_color);
-
-       //imshow(win, img);
-
-       //if( waitKey( 100 ) >= 0 )
-       //    break;
-
        subdiv.insert(fp);
 
        img = Scalar::all(0);
        drawSubdiv(img, subdiv, delaunay_color);
-       //imshow( win, img );
 
-
-       //if( waitKey( 100 ) >= 0 )
-       //    break;
    }
-
-
    calculateFinalIntensities(subdiv);
 
    img = Scalar::all(0);
    paintVoronoi(img, subdiv);
-   //imshow(win, img);
 
    const char* path = voronoiPathname.toStdString().c_str();
-   //const char* path = "/homes/td613/Documents/individual project/images/voronoi-image.png";
    imwrite(path, img);
-
-
 }
 
 

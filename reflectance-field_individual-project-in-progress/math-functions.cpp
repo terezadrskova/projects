@@ -85,3 +85,17 @@ int MainWindow::findNearestCell(Point2f &point){
     return -1;
 }
 
+int MainWindow::closestLightSource( Point2f whereClicked){
+    float smallest = 500.0;
+    int index = -1;
+    for( int i = 0; i <light.size(); i++ )
+    {
+        float newValue = qAbs(light[i]->pos.x - whereClicked.x)+qAbs(light[i]->pos.y - whereClicked.y);
+        if(newValue < smallest){
+            smallest = newValue;
+            index = i;
+        }
+    }
+    return index;
+}
+

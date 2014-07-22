@@ -9,7 +9,6 @@
 #include <highgui.h>
 
 using namespace cv;
-using namespace std;
 
 
 /* ----------------------------------------------------------------
