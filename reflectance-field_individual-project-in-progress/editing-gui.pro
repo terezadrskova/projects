@@ -31,12 +31,15 @@ SOURCES += main.cpp\
     gamma.cpp \
     relighting.cpp \
     image-manipulation.cpp \
-    lightsource.cpp \
-    lights.cpp
+    lights.cpp \
+    mythread.cpp \
+    lightarea.cpp
 
 HEADERS  += mainwindow.h \
     loadPPM.h \
-    lightsource.h
+    lightsource.h \
+    mythread.h \
+    lightarea.h
 
 FORMS    += mainwindow.ui
 
@@ -56,3 +59,5 @@ LIBS += -lopencv_contrib
 LIBS += -lopencv_legacy
 LIBS += -lopencv_flann
 LIBS += -lglut -lGLU
+
+OTHER_FILES +=

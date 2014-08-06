@@ -7,14 +7,16 @@
 
 #include <cv.h>
 #include <highgui.h>
+#include "opencv2/core/gpumat.hpp"
 
 using namespace cv;
+using namespace gpu;
 
 
 /* ----------------------------------------------------------------
  *                   ADD GAMMA
  *-----------------------------------------------------------------*/
-Mat MainWindow::addGamma(Mat& img, double gamma) {
+Mat MainWindow::addGamma(const Mat& img, double gamma) {
  double inverse_gamma = 1.0 / gamma;
 
  Mat lut_matrix(1, 256, CV_8U );

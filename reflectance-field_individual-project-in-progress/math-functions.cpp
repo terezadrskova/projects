@@ -18,6 +18,7 @@
 
 using namespace cv;
 using namespace std;
+using namespace gpu;
 
 
 /* ----------------------------------------------------------------
@@ -65,9 +66,11 @@ Mat MainWindow::convertToFloatingPoint(Mat &image)
 
    // convert from PNG - CV_8U format to floating point CV_32F
    image.convertTo(result,CV_32F);
+   //const gpu::GpuMat tempImg = result;
 
    // normalise the matrix from 0 to 1
    normalize(result,result,0,1,CV_MINMAX);
+
 
    return result;
 }

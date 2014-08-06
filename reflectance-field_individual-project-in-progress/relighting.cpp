@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QString>
 #include <QtCore/qmath.h>
+#include <QThread>
 
 #include <iostream>
 #include <cmath>
@@ -13,84 +14,69 @@
 #include <highgui.h>
 
 using namespace cv;
-using namespace std;
 
 void MainWindow::relighting(){
 
-    int size = arrayOfRFImages.size();
-    Mat tempImg, relightedImg;
-    Mat channel[3];
-
     createVoronoiDiagram();
 
-    for(int i=0; i<size; i++){
-        //correcting GAMMA to 2.2
-        arrayOfRFImages[i].convertTo(tempImg,CV_8UC1);
-        tempImg =  removeGamma(tempImg, GAMMA);
-
-        // converting from 0-255 range to 0-1 range
-        tempImg = convertToFloatingPoint(tempImg);
-
-
-        // ------------ START OF COMPUTATION FOR EACH IMAGE -------------------------------
-
-        // *** coloring the image ***
-
-        // split image into R G B channels
-        split(tempImg, channel);
-
-        // multiplying each channel with corresponding final voronoi cell colour and intensity
-        channel[2] *= finalVoronoiColors[i][0]*finalVoronoiIntensities[i][0]*lightIntensities[i][0];
-        channel[1] *= finalVoronoiColors[i][1]*finalVoronoiIntensities[i][1]*lightIntensities[i][1];
-        channel[0] *= finalVoronoiColors[i][2]*finalVoronoiIntensities[i][2]*lightIntensities[i][2];
-
-        // re relighting
-        for(int x=0; x<light.size(); x++){
-            if(light[x]->cellToRelit==i){
-                qDebug() << "changing lighting of cell: " << i << "R: " << light[x]->redC
-                         << "G: " << light[x]->greenC
-                         << "B: " << light[x]->blueC;
-                channel[2] *= (light[x]->redC/255)*light[x]->lightIntensity;
-                channel[1] *= (light[x]->greenC/255)*light[x]->lightIntensity;
-                channel[0] *= (light[x]->blueC/255)*light[x]->lightIntensity;
-            }
-        }
-
-        //Merging red and green channels
-        merge(channel,3,tempImg);
-
-        // if its a first image
-        if(i==0){
-            relightedImg = tempImg;
-        }
-        // if it is not a second image - add weight of the new image to the previous one
-        else if(i!=0){
-            relightedImg += finalLightStageIntensities[i]*tempImg;
-        }
-
-        // ------------ END OF COMPUTATION FOR EACH IMAGE -------------------------------
-
-        // a!!! fter this and before the end of the loop it can be deleted - code only for testing
-        // change back from 0-1 range to 0-255 range
-        tempImg *= 255;
-
-        // convert it for the right format to add gamma
-        tempImg.convertTo(tempImg,CV_8UC1);
-
-        // add gamma to the image
-        tempImg = addGamma(tempImg, GAMMA);
-
-        // to cut off bug intensities over 1
-        if(finalLightStageIntensities[i]>1){
-            finalLightStageIntensities[i] = 0.75;
-        }
-
-        QString pathname = QString("/homes/td613/Documents/individual project/images/coloured/relighted-image%1.png").arg(i);
-        const char* path = pathname.toStdString().c_str();
-        imwrite(path, tempImg);
-
+    // start threads - first thread goes first - need to create relighteImg
+    // before other threads work on it
+    myThread1.start();
+    if (myThread1.wait()){
+        myThread2.start();
+        myThread3.start();
+        myThread4.start();
+        myThread5.start();
+        myThread6.start();
+        myThread7.start();
+        myThread8.start();
+        myThread9.start();
+        myThread10.start();
+        myThread11.start();
+        myThread12.start();
+        myThread13.start();
+        myThread14.start();
+        myThread15.start();
+        myThread16.start();
     }
 
+    myThread2.wait();
+    myThread3.wait();
+    myThread4.wait();
+    myThread5.wait();
+    myThread6.wait();
+    myThread7.wait();
+    myThread8.wait();
+    myThread9.wait();
+    myThread10.wait();
+    myThread11.wait();
+    myThread12.wait();
+    myThread13.wait();
+    myThread14.wait();
+    myThread15.wait();
+    myThread16.wait();
+
+    myThread1.quit();
+    myThread2.quit();
+    myThread3.quit();
+    myThread4.quit();
+    myThread5.quit();
+    myThread6.quit();
+    myThread7.quit();
+    myThread8.quit();
+    myThread9.quit();
+    myThread10.quit();
+    myThread11.quit();
+    myThread12.quit();
+    myThread13.quit();
+    myThread14.quit();
+    myThread15.quit();
+    myThread16.quit();
+
+
+    qDebug() << "THREAD IS FINISHED";
+
+    //relightedImg /= sumOfIntensities;
     relightedImg /= NUMBEROFLIGHTSOURCES;
 
     relightedImg *= 255;
@@ -131,4 +117,6 @@ void MainWindow::relighting(){
     QPixmap newVoronoiImage(voronoiPathname);
     ui->label_voronoi->setPixmap(newVoronoiImage);
     ui->label_voronoi->setScaledContents(true);
+
+
 }

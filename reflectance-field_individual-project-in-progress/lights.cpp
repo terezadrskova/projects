@@ -7,11 +7,20 @@
 #include <QLabel>
 #include <QList>
 #include <QColorDialog>
+#include <QPixmap>
 
 #include <cv.h>
 #include <highgui.h>
 
 using namespace cv;
+
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    if(isPaintingOn==true){
+        m_nbMousePressed = false;
+    }
+}
 
  void MainWindow::dragEnterEvent(QDragEnterEvent *event)
  {
@@ -29,14 +38,20 @@ using namespace cv;
 
  void MainWindow::dragMoveEvent(QDragMoveEvent *event)
  {
-     if (event->mimeData()->hasFormat("application/x-dnditemdata")) {
-         if (event->source() == this) {
+     if (event->mimeData()->hasFormat("application/x-dnditemdata"))
+     {
+         if (event->source() == this)
+         {
              event->setDropAction(Qt::MoveAction);
              event->accept();
-         } else {
+         }
+         else
+         {
              event->acceptProposedAction();
          }
-     } else {
+     }
+     else
+     {
          event->ignore();
      }
  }
@@ -46,14 +61,28 @@ using namespace cv;
      if (event->mimeData()->hasFormat("application/x-dnditemdata")) {
          // change coordinates/nearestcell of the light source
          if(activeLightSource!=-1 && activeLightSource<light.size()){
+             int localX,localY;
+             localX = (event->pos().x()-557)*1.538461538; // 65%
+             localY = (event->pos().y()-166)*1.538461538; // 65%
+             if(localX>1024 || localX<0 || localY>512 || localY<0){
+                 // return if you are not in the lightsource widget
+                 return;
+             }
+             qDebug() << "local x: " << localX;
+             qDebug() << "local y: " << localY;
+
              QPoint thisPoint(event->pos());
-             Point2f cvPoint(thisPoint.x(),thisPoint.y());
+             Point2f cvPoint(localX,localY);
              light[activeLightSource]->pos = cvPoint;
              Point2f nearestCell;
              subdiv.findNearest(cvPoint,&nearestCell);
              light[activeLightSource]->cellToRelit = findNearestCell(nearestCell);
              qDebug() << "cell to relit: " << light[activeLightSource]->cellToRelit;
-             relighting();
+             QString activeLightTx = QString("Lightsource: %1  x: %2 y: %3")
+                     .arg(activeLightSource)
+                     .arg(light[activeLightSource]->pos.x)
+                     .arg(light[activeLightSource]->pos.y);
+             ui->activeLightLb->setText(activeLightTx);
          }
 
          QByteArray itemData = event->mimeData()->data("application/x-dnditemdata");
@@ -75,6 +104,7 @@ using namespace cv;
          } else {
              event->acceptProposedAction();
          }
+
      } else {
          event->ignore();
      }
@@ -87,7 +117,7 @@ using namespace cv;
      Point2f position(x,y);
 
      // drag and drop on the left click
-     if (event->button() == Qt::LeftButton){
+     if (event->button() == Qt::LeftButton && isPaintingOn==false){
          int localX,localY;
          localX = (x-557)*1.538461538; // 65%
          localY = (y-166)*1.538461538; // 65%
@@ -99,12 +129,18 @@ using namespace cv;
          // check which object is moving and save an index
          Point2f eventPos(event->x(),event->y());
          activeLightSource = closestLightSource(eventPos);
+         if(activeLightSource!=-1 && activeLightSource<light.size()){
+            light[activeLightSource]->pos.x = event->x();
+            light[activeLightSource]->pos.y = event->y();
 
-         QString activeLightTx = QString("Lightsource: %1").arg(activeLightSource);
-         ui->activeLightLb->setText(activeLightTx);
+            QString activeLightTx = QString("Lightsource: %1  x: %2 y: %3")
+                 .arg(activeLightSource)
+                 .arg(light[activeLightSource]->pos.x)
+                 .arg(light[activeLightSource]->pos.y);
+            ui->activeLightLb->setText(activeLightTx);
 
-         ui->spbIntensity->setValue(light[activeLightSource]->lightIntensity);
-
+            ui->spbIntensity->setValue(light[activeLightSource]->lightIntensity);
+        }
 
          QLabel *child = static_cast<QLabel*>(childAt(event->pos()));
          if (!child)
@@ -138,13 +174,23 @@ using namespace cv;
              child->show();
              child->setPixmap(pixmap);
          }
+         qDebug() << "----------------- relighting() LEFT click ---------------------------";
+
+         relighting();
      }
 
-     // ************ ADDING A LIGHT SOURCE THROUGH RIGHT CLICK **********************
+     else if (event->button() == Qt::LeftButton && isPaintingOn==true){
+         qDebug() << "painting is on - let's paint";
+         m_nbMousePressed = true;
+         m_nInitialX = event->pos().x();
+         m_nInitialY = event->pos().y();
+     }
+
+     // ************ ADDING A LIGHT SOURCE THROUGH MIDDLE CLICK **********************
 
 
      // create a new light source on right click
-     if (event->button() == Qt::RightButton)
+     else if (event->button() == Qt::MiddleButton)
      {
         // convert values from MainWindow to local coordinates
         int localX,localY;
@@ -156,11 +202,7 @@ using namespace cv;
             // return if you are not in the lightsource widget
             return;
         }
-
-        qDebug() << "coordinates: " << localX << localY;
-        qDebug() << "right mouse click - create a new lightsource";
         setAcceptDrops(true);
-
 
 
         // created lightsource is the closest one
@@ -171,13 +213,17 @@ using namespace cv;
         qDebug() << "number of lights" << numberOfLights;
 
         // -------------------- change COLOUR of the light source -------------------------
-        int redCh = red;
-        int greenCh = green;
-        int blueCh = blue;
-
         qDebug() << "new light source " << red << green << blue;
         Mat channel[4];
         split(lightImg, channel);
+
+        qDebug() << "i after adding light source: " << numberOfLights;
+        colorOfLights[numberOfLights][0] = red;
+        colorOfLights[numberOfLights][1] = green;
+        colorOfLights[numberOfLights][2] = blue;
+        qDebug() << "#new light source " << colorOfLights[numberOfLights][0]
+                 << colorOfLights[numberOfLights][1]
+                 << colorOfLights[numberOfLights][2];
 
         // multiplying each channel with corresponding colour
         channel[2] = red;
@@ -212,17 +258,94 @@ using namespace cv;
         Point2f nearestCell;
         subdiv.findNearest(localPoint,&nearestCell);
         int cellForRelighting = findNearestCell(nearestCell);
-        qDebug() << "cell to relit: " << cellForRelighting;
+        qDebug() << "cell to relit: " << cellForRelighting << "x" << localPoint.x << "y" << localPoint.y;
 
         // ----------------- change INTENSITY of the light source
-        int intensity = 50;
+        float intensity = 1.0;
 
-        light.push_back(new LightSource(intensity, redCh, greenCh, blueCh, position,cellForRelighting, listLight));
+        light.push_back(new LightSource(intensity, red, green, blue, position,cellForRelighting, listLight));
         numberOfLights++;
-     }
-     qDebug() << "----------------- relighting() after mouse drag----------------------------";
-     relighting();
 
+        qDebug() << "----------------- relighting() MIDDLE click ---------------------------";
+
+        relighting();
+
+     }
+     else if (event->button() == Qt::RightButton){
+         //lightArea.my_mouse_callback(event);
+         qDebug() << "make function to draw a rectangle to select multiple light sources";
+     }
+
+ }
+
+ void MainWindow::paintEvent(QPaintEvent *e)
+ {
+     if(m_nbMousePressed && isPaintingOn)
+     {
+         qDebug() << "paint event is on";
+     }
+ }
+
+ void MainWindow::mouseMoveEvent(QMouseEvent *event)
+ {
+     if (event->type() == QEvent::MouseMove && isPaintingOn)
+     {
+        qDebug() << "mouse is moving";
+
+
+
+        // ----------  adding a new light source for painting -------
+        Point2f localPoint(event->pos().x(), event->pos().y());
+        Point2f nearestCell;
+        subdiv.findNearest(localPoint,&nearestCell);
+        int cellForRelighting = findNearestCell(nearestCell);
+
+        QPixmap pixmap("/homes/td613/Documents/individual project/images/new-light-out.png");
+        QPainter painter( &pixmap );
+        painter.setPen( Qt::black );
+
+        // check if there is already a light source
+        bool lightSourceExists = false;
+        for(int i=0; i<storedCells.size(); i++){
+            if(storedCells[i] == cellForRelighting){
+                lightSourceExists = true;
+                break;
+            }
+        }
+
+        if(!lightSourceExists){
+            polyPoints.push_back(event->pos());
+            storedCells.push_back(cellForRelighting);
+
+            for(int i=0; i<polyPoints.size(); i++){
+                qDebug() << i << polyPoints[i] << "cell: " << storedCells[i];
+            }
+            /*
+            // new label
+            // creates a new label with lightsource
+            QLabel *lbLight = new QLabel(this);
+            lbLight->setPixmap(QPixmap("/homes/td613/Documents/individual project/images/light-out.png"));
+            //lbLight->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            lbLight->move(x, y);
+            lbLight->setAttribute(Qt::WA_DeleteOnClose);
+
+            QList<QLabel*> listLight;
+            listLight.append(lbLight);
+
+            // display icon for the new lightsource
+            QVBoxLayout *vbl = new QVBoxLayout;
+            vbl->addWidget(lbLight);
+            lbLight->show();
+            float intensity = ui->spbIntensity->value();
+
+            light.push_back(new LightSource(intensity, red, green, blue, localPoint,cellForRelighting, listLight));
+            numberOfLights++;
+            */
+        }
+
+
+     }
+     update(); // update your view
  }
 
  void MainWindow::setColor()
@@ -230,7 +353,7 @@ using namespace cv;
      color = QColorDialog::getColor(Qt::blue, this);
      if (color.isValid())
      {
-         if(activeLightSource!=-1){
+         if(activeLightSource!=-1 && activeLightSource<light.size()){
             light[activeLightSource]->redC = color.red();
             light[activeLightSource]->greenC = color.green();
             light[activeLightSource]->blueC = color.blue();
@@ -247,10 +370,10 @@ using namespace cv;
  /* ----------------------------------------------------------------
   *                  UPDATE COLOR
   *-----------------------------------------------------------------*/
- void MainWindow::on_pushButton_2_clicked()
+ void MainWindow::on_updateLightSourceColor_clicked()
  {
      qDebug() << "before the if statement";
-     if(activeLightSource!=-1){
+     if(activeLightSource!=-1 && activeLightSource<light.size()){
         // updating color values of the active light source
         qDebug() << "new RGB" << red << green << blue;
         light[activeLightSource]->redC = red;
@@ -272,5 +395,12 @@ using namespace cv;
 
         // updates label with a new pixmap colored image
         light[activeLightSource]->lbLight[0]->setPixmap(QPixmap("/homes/td613/Documents/individual project/images/new-light-out.png"));
+
+        // do relighting with new colour
+        colorOfLights[activeLightSource][2] = red;
+        colorOfLights[activeLightSource][1] = green;
+        colorOfLights[activeLightSource][0] = blue;
      }
+     relighting();
  }
+

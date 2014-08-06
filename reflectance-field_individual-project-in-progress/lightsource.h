@@ -14,7 +14,7 @@ using namespace cv;
 class LightSource
 {
 public:
-    int lightIntensity;
+    float lightIntensity;
     int redC;
     int greenC;
     int blueC;
@@ -22,7 +22,7 @@ public:
     int cellToRelit;
     QList<QLabel*> lbLight;
 
-    LightSource(int &_lightIntensity, int &_redC, int &_greenC, int &_blueC, Point2f &_pos, int &_cellToRelit,  QList<QLabel*> &_lbLight){
+    LightSource(float &_lightIntensity, int &_redC, int &_greenC, int &_blueC, Point2f &_pos, int &_cellToRelit,  QList<QLabel*> &_lbLight){
         lightIntensity = _lightIntensity;
         redC = _redC;
         greenC = _greenC;

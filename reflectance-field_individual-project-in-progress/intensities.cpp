@@ -124,13 +124,12 @@ void MainWindow::calculateFinalIntensities(Subdiv2D& subdiv){
          finalCellIntensity[i] = (finalVoronoiIntensities[i][0]+finalVoronoiIntensities[i][1]+finalVoronoiIntensities[i][2])/3;
 
            //normalise values to get colour between 0-1
-         scalar = (finalVoronoiIntensities[i][0] + finalVoronoiIntensities[i][1] + finalVoronoiIntensities[i][2])/13;
+         scalar = (finalVoronoiIntensities[i][0] + finalVoronoiIntensities[i][1] + finalVoronoiIntensities[i][2])/15;
 
          finalVoronoiColors[i][0] = finalVoronoiIntensities[i][0]/scalar;
          finalVoronoiColors[i][1] = finalVoronoiIntensities[i][1]/scalar;
          finalVoronoiColors[i][2] = finalVoronoiIntensities[i][2]/scalar;
 
-         //qDebug() << "final voronoi colours" << finalVoronoiColors[i][0] << finalVoronoiColors[i][1] << finalVoronoiColors[i][2];
      }
 }
 

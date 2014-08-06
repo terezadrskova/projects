@@ -38,7 +38,6 @@ void MainWindow::loadRFImages()
     // define the size of vector to avoid out of range error
     arrayOfRFImages.resize(rfImagesPath.size());
 
-    Mat tempImg;
     // processing of every single RF image within a vector
     for (int i = 0; i < rfImagesPath.size(); ++i){
 
@@ -48,6 +47,7 @@ void MainWindow::loadRFImages()
         const char* imageName = rfImagesPath.at(i).toLocal8Bit().constData();
         Mat image = imread(imageName, CV_LOAD_IMAGE_COLOR);
 
+        // leave only GpuMat version when working correctly
         arrayOfRFImages[i] = image;
     }
 
